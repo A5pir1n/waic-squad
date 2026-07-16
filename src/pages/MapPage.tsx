@@ -55,7 +55,10 @@ export function MapPage() {
     if (!mapEl.current || mapRef.current) return;
     const map = new maplibregl.Map({
       container: mapEl.current,
-      style: buildMapStyle(`${window.location.origin}/tiles/shanghai.pmtiles`),
+      style: buildMapStyle(
+        (import.meta.env.VITE_TILES_URL as string | undefined) ??
+        `${window.location.origin}/tiles/shanghai.pmtiles`,
+      ),
       center: [121.478, 31.19],
       zoom: 11.6,
       minZoom: 9,

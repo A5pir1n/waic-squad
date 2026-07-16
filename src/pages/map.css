@@ -43,7 +43,9 @@
 .pin {
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   transform: translateZ(0);
+  z-index: 1 !important;
 }
+.pin .pin-label { pointer-events: none; } /* 标签只展示,点击落在按钮本体 */
 .pin-dot {
   width: 14px; height: 14px; border-radius: 50%;
   background: var(--pin-party);
@@ -93,10 +95,13 @@
 
 /* ---- venue mega markers ---- */
 .venue-marker {
-  position: relative;
   display: flex; flex-direction: column; align-items: center;
   width: 120px;
+  pointer-events: none; /* 只有圆环可点，避免盖住旁边的活动 pin */
+  z-index: 5 !important;
 }
+.venue-marker .venue-ring, .venue-marker .venue-tag,
+.venue-marker .venue-name, .venue-marker .venue-count { pointer-events: auto; cursor: pointer; }
 .venue-ring {
   width: 46px; height: 46px; border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.55);
@@ -129,6 +134,7 @@
 .presence-marker {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   pointer-events: none;
+  z-index: 6 !important;
 }
 .presence-avatar {
   width: 26px; height: 26px; border-radius: 50%;
