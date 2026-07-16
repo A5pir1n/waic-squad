@@ -1,0 +1,50 @@
+.card-row {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-3);
+}
+.card-row .card-title { flex: 1; min-width: 0; }
+
+.meta-funding { max-width: 46vw; }
+
+.chip-divider {
+  flex-shrink: 0; width: 1px; align-self: stretch; margin: 2px 4px;
+  background: var(--hairline-strong);
+}
+
+.list-empty {
+  text-align: center; color: var(--text-low); padding: var(--sp-8) 0;
+  font-size: var(--text-sm);
+}
+
+.note-input {
+  width: 100%; margin-top: var(--sp-3);
+  background: var(--surface-2); border-radius: var(--r-inner);
+  padding: 9px 12px; font-size: var(--text-sm);
+  min-height: 38px; resize: none;
+  color: var(--accent);
+}
+
+.card-note {
+  margin-top: var(--sp-2); font-size: var(--text-sm); color: var(--accent);
+  opacity: 0.85;
+}
+
+/* ---- party card extras ---- */
+.party-day-head {
+  position: sticky; top: 0;
+  font-family: var(--font-display); font-weight: 350;
+  letter-spacing: 0.2em; font-size: var(--text-sm); color: var(--text-low);
+  padding: var(--sp-3) 0 var(--sp-1);
+  background: linear-gradient(var(--bg) 75%, transparent);
+  z-index: 5;
+}
+.party-price {
+  color: var(--accent); font-size: var(--text-xs);
+  border: 1px solid var(--accent-dim); background: var(--accent-dim);
+  border-radius: var(--r-pill); padding: 1px 8px; white-space: nowrap;
+}
+.party-price--free {
+  color: var(--text-mid); background: none; border-color: var(--hairline);
+}
+.party-links { display: flex; gap: var(--sp-2); margin-top: var(--sp-3); flex-wrap: wrap; }
+.guest-line { color: var(--text-mid); font-size: var(--text-sm); margin-top: 3px; }
+.guest-line b { color: var(--text-hi); font-weight: 500; }

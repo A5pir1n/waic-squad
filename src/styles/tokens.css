@@ -1,0 +1,77 @@
+/* ============================================================
+   WAIC 小分队 — design tokens
+   Sampled live from moonshot.ai (2026-07-17):
+   pure-black stage, white-alpha text ramp, M PLUS 1 hairline
+   display, pill radii, lunar-eclipse glow motif.
+   ============================================================ */
+:root {
+  /* stage */
+  --bg: #000000;
+  --surface: #121212;
+  --surface-2: #1a1a1a;
+  --surface-3: #232323;
+  --hairline: rgba(255, 255, 255, 0.08);
+  --hairline-strong: rgba(255, 255, 255, 0.16);
+
+  /* text ramp (moonshot uses white at 100 / 84 / 56 / 42) */
+  --text: #ffffff;
+  --text-hi: rgba(255, 255, 255, 0.84);
+  --text-mid: rgba(255, 255, 255, 0.56);
+  --text-low: rgba(255, 255, 255, 0.42);
+  --text-faint: rgba(255, 255, 255, 0.24);
+
+  /* single warm accent: moonlight gold — carries "想聊/想去" */
+  --accent: #e8cd8a;
+  --accent-dim: rgba(232, 205, 138, 0.16);
+  --accent-glow: rgba(232, 205, 138, 0.45);
+
+  /* status */
+  --status-want: var(--accent);
+  --status-done: #ffffff;
+  --status-skip: rgba(255, 255, 255, 0.28);
+
+  /* map pin scale */
+  --pin-party: #b9c3cf;
+
+  /* type */
+  --font-display: 'M PLUS 1', 'PingFang SC', 'HarmonyOS Sans SC', system-ui, sans-serif;
+  --font-body: 'PingFang SC', 'HarmonyOS Sans SC', 'MiSans', system-ui, sans-serif;
+
+  --text-xs: 0.6875rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-hero: clamp(2rem, 4vw + 1.2rem, 3.25rem);
+
+  /* rhythm */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-8: 3rem;
+
+  /* radii — pills + 16px cards, per moonshot */
+  --r-card: 16px;
+  --r-inner: 10px;
+  --r-pill: 999px;
+
+  --duration-fast: 150ms;
+  --duration: 300ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --tabbar-h: calc(58px + env(safe-area-inset-bottom, 0px));
+}
+
+@font-face {
+  font-family: 'M PLUS 1';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/mplus1-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}

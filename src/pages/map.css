@@ -1,0 +1,155 @@
+.map-loading {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-low); font-size: var(--text-sm); letter-spacing: 0.2em;
+}
+
+.map-page { position: absolute; inset: 0; }
+.map-canvas { position: absolute; inset: 0; }
+.map-canvas .maplibregl-ctrl-attrib {
+  background: rgba(0,0,0,0.5); color: var(--text-faint); font-size: 9px;
+}
+.map-canvas .maplibregl-ctrl-attrib a { color: var(--text-faint); }
+
+/* ---- top overlay ---- */
+.map-top {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+  padding: calc(var(--sp-4) + env(safe-area-inset-top, 0px)) var(--sp-4) var(--sp-4);
+  background: linear-gradient(rgba(0,0,0,0.88) 20%, transparent);
+  pointer-events: none;
+  display: flex; flex-direction: column; gap: var(--sp-3);
+}
+.map-brand { font-size: var(--text-xl); }
+.map-days { pointer-events: auto; }
+.map-days .chip { backdrop-filter: blur(10px); background: rgba(10,10,10,0.6); }
+.map-days .chip.active { background: #fff; }
+
+/* ---- legend ---- */
+.map-legend {
+  position: absolute; right: var(--sp-3); bottom: calc(var(--sp-3));
+  z-index: 10; display: flex; flex-direction: column; gap: 4px;
+  background: rgba(10,10,10,0.72); backdrop-filter: blur(10px);
+  border: 1px solid var(--hairline); border-radius: var(--r-inner);
+  padding: 8px 10px; font-size: 10px; color: var(--text-mid);
+}
+.map-legend span { display: flex; align-items: center; gap: 6px; }
+.lg { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.lg-want { background: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
+.lg-team { background: none; border: 1.5px solid var(--accent); }
+.lg-done { background: #fff; }
+.lg-approx { background: none; border: 1.5px dashed var(--text-low); border-radius: 50%; }
+
+/* ---- party pins ---- */
+.pin {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  transform: translateZ(0);
+}
+.pin-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--pin-party);
+  border: 2px solid rgba(0, 0, 0, 0.85);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.25), 0 2px 8px rgba(0,0,0,0.8);
+  display: flex; align-items: center; justify-content: center;
+  color: #000; font-size: 9px; font-weight: 700;
+  font-family: var(--font-display);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+.pin:active .pin-dot { transform: scale(1.25); }
+.pin-label {
+  max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 10px; color: var(--text-mid);
+  text-shadow: 0 1px 3px #000, 0 0 6px #000;
+  letter-spacing: 0.02em;
+  transition: opacity var(--duration-fast);
+}
+/* 低缩放：普通 pin 收起标签，高亮状态(想去/队友想去)的仍然保留 */
+.zoomed-out .pin.status-none .pin-label,
+.zoomed-out .pin.status-skip .pin-label,
+.zoomed-out .pin.status-done .pin-label { opacity: 0; }
+
+.pin.status-want .pin-dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 14px var(--accent-glow);
+}
+.pin.status-want .pin-label { color: var(--accent); }
+.pin.status-team-want .pin-dot {
+  background: #17140c;
+  box-shadow: 0 0 0 1.5px var(--accent), 0 0 10px rgba(232, 205, 138, 0.25);
+  color: var(--accent);
+}
+.pin.status-done .pin-dot { background: #ffffff; box-shadow: 0 0 0 1px #fff, 0 0 10px rgba(255,255,255,0.4); }
+.pin.status-skip { opacity: 0.32; }
+.pin.status-skip .pin-label { text-decoration: line-through; }
+
+.pin--approx .pin-dot {
+  background: rgba(20, 20, 20, 0.8);
+  border: 1.5px dashed var(--text-low);
+  box-shadow: none; color: var(--text-mid);
+  width: 16px; height: 16px;
+}
+.pin--approx.status-want .pin-dot { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 10px rgba(232,205,138,0.25); }
+.pin--approx.status-team-want .pin-dot { border-color: var(--accent); color: var(--accent); }
+.pin--approx.status-done .pin-dot { border-color: #fff; color: #fff; }
+
+/* ---- venue mega markers ---- */
+.venue-marker {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  width: 120px;
+}
+.venue-ring {
+  width: 46px; height: 46px; border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background:
+    radial-gradient(circle at 50% 118%, rgba(255,255,255,0.55), transparent 58%),
+    rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 0 22px rgba(255, 255, 255, 0.18), inset 0 -8px 14px rgba(255,255,255,0.16);
+  animation: venuePulse 4.2s ease-in-out infinite;
+}
+.venue-tag {
+  position: absolute; top: 13px;
+  font-family: var(--font-display); font-weight: 500; font-size: 10px;
+  letter-spacing: 0.22em; color: #fff; text-indent: 0.22em;
+}
+.venue-name {
+  margin-top: 6px; font-size: 12px; font-weight: 600; color: #fff;
+  text-shadow: 0 1px 4px #000, 0 0 8px #000;
+}
+.venue-count {
+  font-size: 10px; color: var(--text-mid); text-shadow: 0 1px 3px #000;
+  font-family: var(--font-display);
+}
+@keyframes venuePulse {
+  0%, 100% { box-shadow: 0 0 18px rgba(255,255,255,0.14), inset 0 -8px 14px rgba(255,255,255,0.14); }
+  50% { box-shadow: 0 0 30px rgba(255,255,255,0.30), inset 0 -8px 18px rgba(255,255,255,0.22); }
+}
+
+/* ---- teammate presence ---- */
+.presence-marker {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  pointer-events: none;
+}
+.presence-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #000; font-weight: 700; font-size: 12px;
+  border: 2px solid #000;
+  box-shadow: 0 0 0 1.5px rgba(255,255,255,0.7), 0 3px 10px rgba(0,0,0,0.8);
+  animation: presenceBob 2.6s ease-in-out infinite;
+}
+.presence-name {
+  font-size: 9px; color: var(--text-hi); text-shadow: 0 1px 3px #000;
+}
+@keyframes presenceBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* ---- drawer content ---- */
+.map-drawer-list { display: flex; flex-direction: column; gap: var(--sp-3); }
+.approx-note {
+  font-size: var(--text-xs); color: var(--text-low);
+  border: 1px dashed var(--hairline-strong); border-radius: var(--r-inner);
+  padding: 7px 10px;
+}

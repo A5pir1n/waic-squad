@@ -1,0 +1,74 @@
+.venue-page { padding-bottom: var(--sp-6); }
+
+.venue-head {
+  flex-direction: row; align-items: center; gap: var(--sp-3);
+}
+.venue-back {
+  width: 36px; height: 36px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--hairline); border-radius: 50%;
+  color: var(--text-hi);
+}
+.venue-meta { color: var(--text-low); font-size: var(--text-xs); margin-top: 2px; }
+
+.venue-note {
+  padding: var(--sp-3) var(--sp-4) 0;
+  color: var(--text-faint); font-size: var(--text-xs); letter-spacing: 0.04em;
+}
+
+.hall-grid {
+  display: flex; flex-wrap: wrap; gap: var(--sp-2);
+  padding: var(--sp-4);
+  align-items: stretch;
+}
+
+.hall-block {
+  flex-grow: 1;
+  position: relative;
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end;
+  gap: 3px;
+  padding: var(--sp-3);
+  text-align: left;
+  background:
+    radial-gradient(circle at 82% -10%, rgba(255,255,255,0.07), transparent 55%),
+    var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  overflow: hidden;
+  transition: border-color var(--duration-fast), transform var(--duration-fast) var(--ease-out);
+  animation: hallIn 600ms var(--ease-out) both;
+}
+.hall-block:active { transform: scale(0.97); border-color: var(--hairline-strong); }
+
+.hall-code {
+  font-family: var(--font-display); font-weight: 250;
+  font-size: clamp(1.6rem, 8vw, 2.6rem);
+  letter-spacing: 0.06em; color: var(--text);
+  line-height: 1;
+}
+.hall-count {
+  font-family: var(--font-display); font-size: var(--text-sm);
+  color: var(--text-mid);
+}
+.hall-industries {
+  font-size: var(--text-xs); color: var(--text-low);
+  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.hall-badges {
+  position: absolute; top: var(--sp-3); right: var(--sp-3);
+  display: flex; flex-direction: column; gap: 4px; align-items: flex-end;
+}
+.hb {
+  font-style: normal; font-size: 10px; border-radius: var(--r-pill);
+  padding: 2px 8px; letter-spacing: 0.03em;
+}
+.hb-want { background: var(--accent); color: #0d0a03; font-weight: 600; box-shadow: 0 0 10px var(--accent-glow); }
+.hb-team { border: 1px solid var(--accent); color: var(--accent); }
+.hb-done { background: rgba(255, 255, 255, 0.92); color: #000; font-weight: 600; }
+
+.venue-all { margin: 0 var(--sp-4); }
+
+@keyframes hallIn {
+  from { opacity: 0; transform: translateY(12px); }
+}
