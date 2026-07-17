@@ -21,11 +21,9 @@ edgeone pages deploy dist -n waic-squad
 
 ## 注意
 
-- `dist/tiles/shanghai.pmtiles` 34MB：EdgeOne Pages 单文件上限 25MB 时会被拒。
-  两个解法任选：
-  - **A（推荐）**：把 pmtiles 放到腾讯云 COS/EdgeOne 对象存储（开 Range 与 CORS），
-    然后构建时设 `VITE_TILES_URL=https://<bucket-cdn>/shanghai.pmtiles`
-    （MapPage 已优先读该环境变量，见 src/pages/MapPage.tsx）
-  - **B**：重切更小的瓦片包 `--maxzoom=14`（约 15MB，街区级依然够用）
+- `dist/tiles/shanghai.pmtiles` 已用 z14 版（19MB），低于 EdgeOne Pages 25MB 单文件上限，
+  矢量瓦片会自动超采样到 15.9 级显示，城市导航精度足够
+- 如果以后想换回 z15 高精度版（34MB），需把 pmtiles 放对象存储并设
+  `VITE_TILES_URL=https://<bucket-cdn>/shanghai.pmtiles`（MapPage 已支持）
 - Supabase 域名 `*.supabase.co` 国内一般可达但偶发抖动，应用内置 30s 轮询降级
 - 换成阿里 OSS 静态站也一样：`dist/` 整个上传，开静态网站托管 + CDN 即可

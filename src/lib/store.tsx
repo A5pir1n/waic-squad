@@ -185,12 +185,17 @@ export function TeamProvider({ session, children }: { session: Session; children
         return next;
       });
       if (!supabase) return;
+      // 注意: supabase 查询是惰性 thenable, 必须 .then() 才会真正发请求
+      const logErr = ({ error }: { error: { message: string } | null }) => {
+        if (error) console.error('[marks] 写入失败:', error.message);
+      };
       if (status === null) {
-        void supabase.from('marks').delete()
+        supabase.from('marks').delete()
           .eq('team_code', teamCode).eq('member_id', member.id)
-          .eq('target_type', type).eq('target_id', id);
+          .eq('target_type', type).eq('target_id', id)
+          .then(logErr);
       } else {
-        void supabase.from('marks').upsert(
+        supabase.from('marks').upsert(
           {
             team_code: teamCode,
             member_id: member.id,
@@ -203,7 +208,7 @@ export function TeamProvider({ session, children }: { session: Session; children
             updated_at: new Date().toISOString(),
           },
           { onConflict: 'member_id,target_type,target_id' },
-        );
+        ).then(logErr);
       }
     },
     [teamCode, member],
@@ -216,9 +221,11 @@ export function TeamProvider({ session, children }: { session: Session; children
       void channelRef.current.track({ member, place, since: new Date().toISOString() });
     }
     if (supabase) {
-      void supabase.from('checkins').insert({
+      supabase.from('checkins').insert({
         team_code: teamCode, member_id: member.id, member_name: member.name,
         place_type: place.type, place_id: place.id, label: place.label,
+      }).then(({ error }) => {
+        if (error) console.error('[checkins] 写入失败:', error.message);
       });
     }
   }, [teamCode, member]);
