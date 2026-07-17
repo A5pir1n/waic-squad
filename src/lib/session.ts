@@ -41,6 +41,19 @@ export function pickColor(name: string): string {
   return MEMBER_COLORS[h % MEMBER_COLORS.length];
 }
 
+/**
+ * crypto.randomUUID() 只在安全上下文（HTTPS/localhost）可用，纯 HTTP 访问时会
+ * 抛 "crypto.randomUUID is not a function"。getRandomValues 没有这个限制，优先用它拼 UUID；
+ * 两者都不可用时（极老浏览器）退化到 Math.random，够用作本地成员标识即可。
+ */
 export function newMemberId(): string {
-  return crypto.randomUUID();
+  if (typeof crypto?.randomUUID === 'function') return crypto.randomUUID();
+  if (typeof crypto?.getRandomValues === 'function') {
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+  return `id-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
