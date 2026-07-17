@@ -1,4 +1,4 @@
-import type { Exhibitor, Party, Venue } from './types';
+import type { Exhibitor, Forum, Party, Venue } from './types';
 
 const cache = new Map<string, unknown>();
 
@@ -14,6 +14,7 @@ async function fetchJson<T>(path: string): Promise<T> {
 export const loadExhibitors = () => fetchJson<Exhibitor[]>('/data/exhibitors.json');
 export const loadParties = () => fetchJson<Party[]>('/data/parties.json');
 export const loadVenues = () => fetchJson<Venue[]>('/data/venues.json');
+export const loadForums = () => fetchJson<Forum[]>('/data/forums.json');
 
 export const PARTY_DAYS = ['07-16', '07-17', '07-18', '07-19', '07-20'] as const;
 

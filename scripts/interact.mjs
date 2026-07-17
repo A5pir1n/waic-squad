@@ -16,7 +16,7 @@ await page.locator('.pin').first().click();
 await page.waitForTimeout(900);
 await page.screenshot({ path: '/tmp/waic-drawer.png' });
 // mark 想去 inside drawer
-const tri = page.locator('.drawer .tri button').first();
+const tri = page.locator('.drawer .rating button').first();
 if (await tri.count()) { await tri.click(); await page.waitForTimeout(400); }
 await page.screenshot({ path: '/tmp/waic-drawer2.png' });
 // close drawer

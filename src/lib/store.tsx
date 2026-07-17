@@ -92,6 +92,8 @@ export function TeamProvider({ session, children }: { session: Session; children
   const [myPlace, setMyPlace] = useState<PresencePlace | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const myPlaceRef = useRef<PresencePlace | null>(null);
+  const marksRef = useRef<MarksIndex>(marks);
+  marksRef.current = marks;
 
   const refreshMarks = useCallback(async () => {
     if (!supabase) return;
@@ -163,21 +165,25 @@ export function TeamProvider({ session, children }: { session: Session; children
   const setMark = useCallback(
     (type: TargetType, id: string, status: MarkStatus | null, note?: string) => {
       const k = markKey(type, id);
+      const existing = (marksRef.current[k] ?? {})[member.id];
+      const nextNote = note ?? existing?.note ?? '';
+      // 评分和纪要都空才真正删行
+      const resolved: { status: MarkStatus | null; note: string } | 'delete' =
+        status === null && !nextNote.trim() ? 'delete' : { status, note: nextNote };
       // optimistic local update
       setMarks((prev) => {
         const next = { ...prev, [k]: { ...(prev[k] ?? {}) } };
-        if (status === null) {
+        if (resolved === 'delete') {
           delete next[k][member.id];
         } else {
-          const existing = next[k][member.id];
           next[k][member.id] = {
             memberId: member.id,
             memberName: member.name,
             memberColor: member.color,
             targetType: type,
             targetId: id,
-            status,
-            note: note ?? existing?.note ?? '',
+            status: resolved.status,
+            note: resolved.note,
             updatedAt: new Date().toISOString(),
           };
         }
@@ -189,7 +195,7 @@ export function TeamProvider({ session, children }: { session: Session; children
       const logErr = ({ error }: { error: { message: string } | null }) => {
         if (error) console.error('[marks] 写入失败:', error.message);
       };
-      if (status === null) {
+      if (resolved === 'delete') {
         supabase.from('marks').delete()
           .eq('team_code', teamCode).eq('member_id', member.id)
           .eq('target_type', type).eq('target_id', id)
@@ -203,8 +209,8 @@ export function TeamProvider({ session, children }: { session: Session; children
             member_color: member.color,
             target_type: type,
             target_id: id,
-            status,
-            note: note ?? '',
+            status: resolved.status,
+            note: resolved.note,
             updated_at: new Date().toISOString(),
           },
           { onConflict: 'member_id,target_type,target_id' },

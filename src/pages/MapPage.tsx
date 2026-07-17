@@ -5,7 +5,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { Protocol } from 'pmtiles';
 import { buildMapStyle } from '../map/style';
 import { loadParties, loadVenues, dayLabel } from '../lib/data';
-import type { Party, Venue } from '../lib/types';
+import { RATING_SCORE } from '../lib/types';
+import type { MarkStatus, Party, Venue } from '../lib/types';
 import { markKey, useTeam } from '../lib/store';
 import { Drawer } from '../components/ui/Drawer';
 import { PartyCard } from './Parties';
@@ -47,7 +48,7 @@ export function MapPage() {
   const [day, setDay] = useState('07-17');
   const [selected, setSelected] = useState<PinGroup | null>(null);
   const [ready, setReady] = useState(false);
-  const { session, marks, presences } = useTeam();
+  const { marks, presences } = useTeam();
   const navigate = useNavigate();
 
   // ---- init map ----
@@ -93,23 +94,18 @@ export function MapPage() {
   );
   const groups = useMemo(() => groupParties(dayParties), [dayParties]);
 
-  /** my status per group: want > done > skip > none (for pin styling) */
+  /** pin 按全队最高评分着色：夯 > 顶级 > 人上人 > NPC > 拉完了 > 未评 */
   const groupStatus = (g: PinGroup): string => {
-    let has = '';
+    let best: MarkStatus | null = null;
     for (const p of g.parties) {
-      const s = (marks[markKey('party', p.id)] ?? {})[session.member.id]?.status;
-      if (s === 'want') return 'want';
-      if (s === 'done') has = has || 'done';
-      else if (s === 'skip') has = has || 'skip';
-    }
-    // 队友想去也点亮（弱一档）
-    if (!has) {
-      for (const p of g.parties) {
-        const bucket = marks[markKey('party', p.id)] ?? {};
-        if (Object.values(bucket).some((m) => m.status === 'want')) return 'team-want';
+      const bucket = marks[markKey('party', p.id)] ?? {};
+      for (const m of Object.values(bucket)) {
+        if (m.status && (!best || RATING_SCORE[m.status] > RATING_SCORE[best])) {
+          best = m.status;
+        }
       }
     }
-    return has;
+    return best ?? '';
   };
 
   // ---- party pins ----
@@ -211,9 +207,10 @@ export function MapPage() {
       </div>
 
       <div className="map-legend">
-        <span><i className="lg lg-want" />想去</span>
-        <span><i className="lg lg-team" />队友想去</span>
-        <span><i className="lg lg-done" />去过</span>
+        <span><i className="lg lg-hang" />夯</span>
+        <span><i className="lg lg-top" />顶级</span>
+        <span><i className="lg lg-elite" />人上人</span>
+        <span><i className="lg lg-npc" />NPC / 拉完了</span>
         <span><i className="lg lg-approx" />位置待定</span>
       </div>
 

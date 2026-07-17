@@ -34,9 +34,10 @@
 }
 .map-legend span { display: flex; align-items: center; gap: 6px; }
 .lg { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-.lg-want { background: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
-.lg-team { background: none; border: 1.5px solid var(--accent); }
-.lg-done { background: #fff; }
+.lg-hang { background: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
+.lg-top { background: #fff; }
+.lg-elite { background: none; border: 1.5px solid rgba(255,255,255,0.7); }
+.lg-npc { background: #3a3a3a; }
 .lg-approx { background: none; border: 1.5px dashed var(--text-low); border-radius: 50%; }
 
 /* ---- party pins ---- */
@@ -64,24 +65,27 @@
   letter-spacing: 0.02em;
   transition: opacity var(--duration-fast);
 }
-/* 低缩放：普通 pin 收起标签，高亮状态(想去/队友想去)的仍然保留 */
+/* 低缩放：只有夯/顶级保留标签，其余 pin 收起文字 */
 .zoomed-out .pin.status-none .pin-label,
-.zoomed-out .pin.status-skip .pin-label,
-.zoomed-out .pin.status-done .pin-label { opacity: 0; }
+.zoomed-out .pin.status-elite .pin-label,
+.zoomed-out .pin.status-npc .pin-label,
+.zoomed-out .pin.status-trash .pin-label { opacity: 0; }
 
-.pin.status-want .pin-dot {
+.pin.status-hang .pin-dot {
   background: var(--accent);
   box-shadow: 0 0 0 1px var(--accent), 0 0 14px var(--accent-glow);
 }
-.pin.status-want .pin-label { color: var(--accent); }
-.pin.status-team-want .pin-dot {
-  background: #17140c;
-  box-shadow: 0 0 0 1.5px var(--accent), 0 0 10px rgba(232, 205, 138, 0.25);
-  color: var(--accent);
+.pin.status-hang .pin-label { color: var(--accent); }
+.pin.status-top .pin-dot { background: #ffffff; box-shadow: 0 0 0 1px #fff, 0 0 10px rgba(255,255,255,0.4); }
+.pin.status-top .pin-label { color: var(--text); }
+.pin.status-elite .pin-dot {
+  background: #17181a;
+  box-shadow: 0 0 0 1.5px rgba(255,255,255,0.7), 0 0 8px rgba(255,255,255,0.2);
+  color: var(--text);
 }
-.pin.status-done .pin-dot { background: #ffffff; box-shadow: 0 0 0 1px #fff, 0 0 10px rgba(255,255,255,0.4); }
-.pin.status-skip { opacity: 0.32; }
-.pin.status-skip .pin-label { text-decoration: line-through; }
+.pin.status-npc { opacity: 0.55; }
+.pin.status-trash { opacity: 0.3; }
+.pin.status-trash .pin-label { text-decoration: line-through; }
 
 .pin--approx .pin-dot {
   background: rgba(20, 20, 20, 0.8);
@@ -89,9 +93,9 @@
   box-shadow: none; color: var(--text-mid);
   width: 16px; height: 16px;
 }
-.pin--approx.status-want .pin-dot { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 10px rgba(232,205,138,0.25); }
-.pin--approx.status-team-want .pin-dot { border-color: var(--accent); color: var(--accent); }
-.pin--approx.status-done .pin-dot { border-color: #fff; color: #fff; }
+.pin--approx.status-hang .pin-dot { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 10px rgba(232,205,138,0.25); }
+.pin--approx.status-top .pin-dot { border-color: #fff; color: #fff; }
+.pin--approx.status-elite .pin-dot { border-color: rgba(255,255,255,0.7); }
 
 /* ---- venue mega markers ---- */
 .venue-marker {

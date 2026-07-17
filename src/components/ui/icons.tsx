@@ -32,6 +32,14 @@ export const IconGlass = ({ size }: IconProps) => (
   </svg>
 );
 
+export const IconForum = ({ size }: IconProps) => (
+  <svg {...base(size)}>
+    <rect x="9" y="3.5" width="6" height="9" rx="3" />
+    <path d="M5.5 10.5a6.5 6.5 0 0 0 13 0" />
+    <path d="M12 17v3.5M8.5 20.5h7" />
+  </svg>
+);
+
 export const IconTeam = ({ size }: IconProps) => (
   <svg {...base(size)}>
     <circle cx="9" cy="8" r="3.2" />

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { loadExhibitors, loadParties, loadVenues, dayLabel } from '../lib/data';
-import type { Exhibitor, Party, PresencePlace, Venue } from '../lib/types';
-import { STATUS_LABELS } from '../lib/types';
+import { loadExhibitors, loadForums, loadParties, loadVenues, dayLabel } from '../lib/data';
+import type { Exhibitor, Forum, Mark, Party, PresencePlace, Venue } from '../lib/types';
+import { RATING_LABELS, RATING_ORDER } from '../lib/types';
 import { useTeam } from '../lib/store';
 import { isOnline } from '../lib/supabase';
 import { clearSession } from '../lib/session';
@@ -13,21 +13,25 @@ export function Team() {
   const { session, marks, presences, live, myPlace, checkIn, checkOut } = useTeam();
   const [exhibitors, setExhibitors] = useState<Exhibitor[]>([]);
   const [parties, setParties] = useState<Party[]>([]);
+  const [forums, setForums] = useState<Forum[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
   const [checkinOpen, setCheckinOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     void loadExhibitors().then(setExhibitors);
     void loadParties().then(setParties);
+    void loadForums().then(setForums);
     void loadVenues().then(setVenues);
   }, []);
 
   const titleOf = useMemo(() => {
     const m = new Map<string, string>();
-    for (const e of exhibitors) m.set(`exhibitor:${e.id}`, e.brand && e.brand !== e.name ? e.brand : e.name);
+    for (const e of exhibitors) m.set(`exhibitor:${e.id}`, e.brand && e.brand !== e.name && e.brand.length <= 24 ? e.brand : e.name);
     for (const p of parties) m.set(`party:${p.id}`, p.title);
+    for (const f of forums) m.set(`forum:${f.id}`, f.title);
     return m;
-  }, [exhibitors, parties]);
+  }, [exhibitors, parties, forums]);
 
   const allMarks = useMemo(
     () => Object.values(marks).flatMap((bucket) => Object.values(bucket)),
@@ -40,15 +44,48 @@ export function Team() {
   );
 
   const perMember = useMemo(() => {
-    const agg = new Map<string, { name: string; color: string; want: number; done: number }>();
+    const agg = new Map<string, { name: string; color: string; hang: number; rated: number; noted: number }>();
     for (const m of allMarks) {
-      const a = agg.get(m.memberId) ?? { name: m.memberName, color: m.memberColor, want: 0, done: 0 };
-      if (m.status === 'want') a.want += 1;
-      if (m.status === 'done') a.done += 1;
+      const a = agg.get(m.memberId) ?? { name: m.memberName, color: m.memberColor, hang: 0, rated: 0, noted: 0 };
+      if (m.status === 'hang') a.hang += 1;
+      if (m.status) a.rated += 1;
+      if (m.note.trim()) a.noted += 1;
       agg.set(m.memberId, a);
     }
-    return [...agg.values()].sort((a, b) => b.done - a.done || b.want - a.want);
+    return [...agg.values()].sort((a, b) => b.rated - a.rated || b.hang - a.hang);
   }, [allMarks]);
+
+  /** 一键战报: 全队评分+纪要拼成 markdown, 直接丢微信群 */
+  const copyReport = async () => {
+    const typeName = { exhibitor: '展商', forum: '论坛', party: '夜场' } as const;
+    const lines: string[] = [`WAIC 小分队战报 · ${new Date().toLocaleDateString('zh-CN')}`];
+    for (const tier of RATING_ORDER) {
+      const rows = allMarks
+        .filter((m) => m.status === tier)
+        .sort((a, b) => a.targetType.localeCompare(b.targetType));
+      if (rows.length === 0) continue;
+      lines.push('', `【${RATING_LABELS[tier]}】`);
+      for (const m of rows) {
+        const title = titleOf.get(`${m.targetType}:${m.targetId}`) ?? m.targetId;
+        lines.push(`- ${title}（${typeName[m.targetType]}·${m.memberName}）${m.note.trim() ? `：${m.note.trim()}` : ''}`);
+      }
+    }
+    const noteOnly = allMarks.filter((m) => !m.status && m.note.trim());
+    if (noteOnly.length > 0) {
+      lines.push('', '【纪要】');
+      for (const m of noteOnly) {
+        const title = titleOf.get(`${m.targetType}:${m.targetId}`) ?? m.targetId;
+        lines.push(`- ${title}（${typeName[m.targetType]}·${m.memberName}）：${m.note.trim()}`);
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(lines.join('\n'));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      alert(lines.join('\n'));
+    }
+  };
 
   const others = presences.filter((p) => p.member.id !== session.member.id);
 
@@ -109,10 +146,15 @@ export function Team() {
         </div>
       </section>
 
-      {/* 进度 */}
+      {/* 战况 */}
       {perMember.length > 0 && (
         <section className="team-section">
-          <h2 className="team-section-title">战况</h2>
+          <div className="team-section-head">
+            <h2 className="team-section-title">战况</h2>
+            <button className="btn-ghost report-btn" onClick={copyReport}>
+              {copied ? '已复制 ✓' : '复制战报'}
+            </button>
+          </div>
           <div className="team-members">
             {perMember.map((m) => (
               <div className="member-row" key={m.name}>
@@ -120,13 +162,13 @@ export function Team() {
                 <div style={{ flex: 1 }}>
                   <p className="card-title" style={{ fontSize: 'var(--text-sm)' }}>{m.name}</p>
                   <div className="progress-line">
-                    <i className="pl-done" style={{ flexGrow: m.done }} />
-                    <i className="pl-want" style={{ flexGrow: m.want }} />
-                    <i className="pl-rest" style={{ flexGrow: Math.max(1, 8 - m.done - m.want) }} />
+                    <i className="pl-want" style={{ flexGrow: m.hang }} />
+                    <i className="pl-done" style={{ flexGrow: Math.max(0, m.rated - m.hang) }} />
+                    <i className="pl-rest" style={{ flexGrow: Math.max(1, 10 - m.rated) }} />
                   </div>
                 </div>
                 <span className="member-score">
-                  <b>{m.done}</b> 聊过 · {m.want} 想聊
+                  <b>{m.rated}</b> 评 · {m.hang} 夯{m.noted > 0 ? ` · ${m.noted} 纪要` : ''}
                 </span>
               </div>
             ))}
@@ -137,20 +179,9 @@ export function Team() {
       {/* 动态 */}
       <section className="team-section">
         <h2 className="team-section-title">小队动态</h2>
-        {feed.length === 0 && <p className="team-empty">还没有动静 · 去标记第一家展商吧</p>}
+        {feed.length === 0 && <p className="team-empty">还没有动静 · 去评第一个夯吧</p>}
         <div className="feed">
-          {feed.map((m) => (
-            <div className="feed-row" key={`${m.memberId}-${m.targetType}-${m.targetId}`}>
-              <Avatar name={m.memberName} color={m.memberColor} size={22} />
-              <p className="feed-text clamp-2">
-                <b>{m.memberName}</b>
-                <span className={`feed-verb feed-${m.status}`}> {STATUS_LABELS[m.targetType][m.status]} </span>
-                {titleOf.get(`${m.targetType}:${m.targetId}`) ?? m.targetId}
-                {m.note && <span className="feed-note">「{m.note}」</span>}
-              </p>
-              <time className="feed-time">{timeAgo(m.updatedAt)}</time>
-            </div>
-          ))}
+          {feed.map((m) => <FeedRow key={`${m.memberId}-${m.targetType}-${m.targetId}`} m={m} title={titleOf.get(`${m.targetType}:${m.targetId}`) ?? m.targetId} />)}
         </div>
       </section>
 
@@ -165,6 +196,24 @@ export function Team() {
         parties={parties}
         onPick={(place) => { checkIn(place); setCheckinOpen(false); }}
       />
+    </div>
+  );
+}
+
+function FeedRow({ m, title }: { m: Mark; title: string }) {
+  return (
+    <div className="feed-row">
+      <Avatar name={m.memberName} color={m.memberColor} size={22} />
+      <p className="feed-text clamp-2">
+        <b>{m.memberName}</b>
+        {m.status ? (
+          <> 评 {title}<span className={`feed-verb feed-${m.status}`}> {RATING_LABELS[m.status]}</span></>
+        ) : (
+          <> 给 {title} 记了纪要</>
+        )}
+        {m.note && <span className="feed-note">「{m.note}」</span>}
+      </p>
+      <time className="feed-time">{timeAgo(m.updatedAt)}</time>
     </div>
   );
 }

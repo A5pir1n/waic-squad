@@ -19,15 +19,24 @@ const B = await mk('阿蓝', '22222222-2222-4222-8222-222222222222');
 // 等 presence 稳定
 await A.waitForTimeout(3000);
 
-// --- test 1: A 在展商库标记想聊, B 应实时看到 mark-chip ---
-await A.goto('http://localhost:5173/#/exhibitors', { waitUntil: 'domcontentloaded' });
-await B.goto('http://localhost:5173/#/exhibitors', { waitUntil: 'domcontentloaded' });
-await A.waitForSelector('.card .tri button');
-await B.waitForSelector('.card .tri button');
-await A.locator('.card').first().locator('.tri button').first().click();
+// --- test 1: A 在论坛页评「夯」, B 应实时看到 mark-chip ---
+await A.goto('http://localhost:5173/#/forums', { waitUntil: 'domcontentloaded' });
+await B.goto('http://localhost:5173/#/forums', { waitUntil: 'domcontentloaded' });
+await A.waitForSelector('.card .rating button');
+await B.waitForSelector('.card .rating button');
+await A.locator('.card').first().locator('.rating button').first().click();
 const t0 = Date.now();
-await B.locator('.card').first().locator('.mark-chip', { hasText: '家齐' }).waitFor({ timeout: 15000 });
-console.log('PASS marks realtime:', Date.now() - t0, 'ms');
+await B.locator('.card').first().locator('.mark-chip', { hasText: '家齐 · 夯' }).waitFor({ timeout: 15000 });
+console.log('PASS rating realtime:', Date.now() - t0, 'ms');
+
+// --- test 1b: A 展开写纪要, B 展开后看到纪要正文 ---
+await A.locator('.card').first().click();
+await A.locator('.card').first().locator('.note-input').fill('主论坛全是官话，前20分钟可跳过');
+await A.locator('.card').first().locator('.note-input').blur();
+await B.locator('.card').first().click();
+const t0b = Date.now();
+await B.locator('.card').first().locator('.team-note', { hasText: '官话' }).waitFor({ timeout: 15000 });
+console.log('PASS note realtime:', Date.now() - t0b, 'ms');
 
 // --- test 2: A 签到场馆, B 地图出现头像 ---
 await A.goto('http://localhost:5173/#/team', { waitUntil: 'domcontentloaded' });

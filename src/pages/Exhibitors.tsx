@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { loadExhibitors } from '../lib/data';
 import type { Exhibitor } from '../lib/types';
 import { markKey, useTeam } from '../lib/store';
-import { TriStatus, TeamMarks } from '../components/ui/TriStatus';
+import { RatingBar, NoteInput, TeamMarks, TeamNotes } from '../components/ui/Rating';
 import { IconSearch } from '../components/ui/icons';
 import './list.css';
 
@@ -14,7 +14,7 @@ const VENUE_SHORT: Record<string, string> = {
   西岸国际会展中心: '西岸', 张江科学会堂: '张江',
 };
 
-type StatusFilter = 'all' | 'my-want' | 'team-want' | 'unmarked';
+type StatusFilter = 'all' | 'my-rated' | 'team-hang' | 'unrated';
 
 export function Exhibitors() {
   const [all, setAll] = useState<Exhibitor[]>([]);
@@ -45,10 +45,9 @@ export function Exhibitors() {
       if (statusF !== 'all') {
         const bucket = marks[markKey('exhibitor', e.id)] ?? {};
         const mine = bucket[session.member.id];
-        const wants = Object.values(bucket).filter((m) => m.status === 'want');
-        if (statusF === 'my-want' && mine?.status !== 'want') return false;
-        if (statusF === 'team-want' && wants.length === 0) return false;
-        if (statusF === 'unmarked' && Object.keys(bucket).length > 0) return false;
+        if (statusF === 'my-rated' && !mine?.status) return false;
+        if (statusF === 'team-hang' && !Object.values(bucket).some((m) => m.status === 'hang')) return false;
+        if (statusF === 'unrated' && Object.values(bucket).some((m) => m.status)) return false;
       }
       if (needle) {
         const hay = `${e.name} ${e.brand} ${e.biz} ${e.sub} ${e.investors}`.toLowerCase();
@@ -100,12 +99,12 @@ export function Exhibitors() {
         </div>
         <div className="chips">
           {hall && <button className="chip active-accent" onClick={() => setVenue(venue)}>展区 {hall} ✕</button>}
-          <button className={`chip ${statusF === 'my-want' ? 'active-accent' : ''}`}
-            onClick={() => setStatusF(statusF === 'my-want' ? 'all' : 'my-want')}>我想聊</button>
-          <button className={`chip ${statusF === 'team-want' ? 'active-accent' : ''}`}
-            onClick={() => setStatusF(statusF === 'team-want' ? 'all' : 'team-want')}>队里想聊</button>
-          <button className={`chip ${statusF === 'unmarked' ? 'active' : ''}`}
-            onClick={() => setStatusF(statusF === 'unmarked' ? 'all' : 'unmarked')}>未标记</button>
+          <button className={`chip ${statusF === 'my-rated' ? 'active-accent' : ''}`}
+            onClick={() => setStatusF(statusF === 'my-rated' ? 'all' : 'my-rated')}>我评过</button>
+          <button className={`chip ${statusF === 'team-hang' ? 'active-accent' : ''}`}
+            onClick={() => setStatusF(statusF === 'team-hang' ? 'all' : 'team-hang')}>队里有夯</button>
+          <button className={`chip ${statusF === 'unrated' ? 'active' : ''}`}
+            onClick={() => setStatusF(statusF === 'unrated' ? 'all' : 'unrated')}>未评</button>
           <span className="chip-divider" />
           <button className={`chip ${!industry ? 'active' : ''}`} onClick={() => setIndustry('')}>全部行业</button>
           {industries.map((i) => (
@@ -135,9 +134,8 @@ function displayName(e: Exhibitor): string {
 
 function ExhibitorCard({ e }: { e: Exhibitor }) {
   const [expanded, setExpanded] = useState(false);
-  const { session, marks, setMark } = useTeam();
+  const { session, marks } = useTeam();
   const mine = (marks[markKey('exhibitor', e.id)] ?? {})[session.member.id];
-  const [note, setNote] = useState(mine?.note ?? '');
 
   return (
     <article className="card" onClick={() => setExpanded((v) => !v)}>
@@ -158,22 +156,16 @@ function ExhibitorCard({ e }: { e: Exhibitor }) {
         </p>
       )}
       {expanded && (
-        <textarea
-          className="note-input"
-          placeholder="给队友留一句备注…"
-          value={note}
-          onClick={(ev) => ev.stopPropagation()}
-          onChange={(ev) => setNote(ev.target.value)}
-          onBlur={() => {
-            if (mine && note !== mine.note) setMark('exhibitor', e.id, mine.status, note);
-          }}
-        />
+        <div onClick={(ev) => ev.stopPropagation()}>
+          <NoteInput type="exhibitor" id={e.id} />
+          <TeamNotes type="exhibitor" id={e.id} />
+        </div>
       )}
       {mine?.note && !expanded && (
         <p className="card-note clamp-1">“{mine.note}”</p>
       )}
       <div onClick={(ev) => ev.stopPropagation()}>
-        <TriStatus type="exhibitor" id={e.id} />
+        <RatingBar type="exhibitor" id={e.id} />
         <TeamMarks type="exhibitor" id={e.id} />
       </div>
     </article>

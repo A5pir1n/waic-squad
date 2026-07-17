@@ -6,9 +6,10 @@ import { TeamProvider } from './lib/store';
 import { Join } from './pages/Join';
 import { Exhibitors } from './pages/Exhibitors';
 import { Parties } from './pages/Parties';
+import { Forums } from './pages/Forums';
 import { Team } from './pages/Team';
 import { VenuePage } from './pages/VenuePage';
-import { IconMap, IconBooth, IconGlass, IconTeam } from './components/ui/icons';
+import { IconMap, IconBooth, IconGlass, IconForum, IconTeam } from './components/ui/icons';
 
 const MapPage = lazy(() => import('./pages/MapPage').then((m) => ({ default: m.MapPage })));
 
@@ -29,6 +30,7 @@ export default function App() {
                 </Suspense>
               } />
               <Route path="/exhibitors" element={<Exhibitors />} />
+              <Route path="/forums" element={<Forums />} />
               <Route path="/parties" element={<Parties />} />
               <Route path="/team" element={<Team />} />
               <Route path="/venue/:venueId" element={<VenuePage />} />
@@ -45,6 +47,7 @@ export default function App() {
 const TABS = [
   { path: '/', label: '地图', icon: IconMap },
   { path: '/exhibitors', label: '展商', icon: IconBooth },
+  { path: '/forums', label: '论坛', icon: IconForum },
   { path: '/parties', label: '夜场', icon: IconGlass },
   { path: '/team', label: '小队', icon: IconTeam },
 ];

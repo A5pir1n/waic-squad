@@ -2,12 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { loadParties, dayLabel } from '../lib/data';
 import type { Party } from '../lib/types';
 import { markKey, useTeam } from '../lib/store';
-import { TriStatus, TeamMarks } from '../components/ui/TriStatus';
+import { RatingBar, NoteInput, TeamMarks, TeamNotes } from '../components/ui/Rating';
 import { IconSearch, IconLink, IconNav } from '../components/ui/icons';
 import { amapLink } from '../lib/geo';
 import './list.css';
 
-type StatusFilter = 'all' | 'my-want' | 'team-want';
+type StatusFilter = 'all' | 'my-rated' | 'team-hang';
 
 export function Parties() {
   const [all, setAll] = useState<Party[]>([]);
@@ -29,8 +29,8 @@ export function Parties() {
       if (day && p.date !== day) return false;
       if (statusF !== 'all') {
         const bucket = marks[markKey('party', p.id)] ?? {};
-        if (statusF === 'my-want' && bucket[session.member.id]?.status !== 'want') return false;
-        if (statusF === 'team-want' && !Object.values(bucket).some((m) => m.status === 'want')) return false;
+        if (statusF === 'my-rated' && !bucket[session.member.id]?.status) return false;
+        if (statusF === 'team-hang' && !Object.values(bucket).some((m) => m.status === 'hang')) return false;
       }
       if (needle) {
         const hay = `${p.title} ${p.organizer} ${p.desc} ${p.venue} ${p.guests.map((g) => g.name).join(' ')}`.toLowerCase();
@@ -68,10 +68,10 @@ export function Parties() {
             </button>
           ))}
           <span className="chip-divider" />
-          <button className={`chip ${statusF === 'my-want' ? 'active-accent' : ''}`}
-            onClick={() => setStatusF(statusF === 'my-want' ? 'all' : 'my-want')}>我想去</button>
-          <button className={`chip ${statusF === 'team-want' ? 'active-accent' : ''}`}
-            onClick={() => setStatusF(statusF === 'team-want' ? 'all' : 'team-want')}>队里想去</button>
+          <button className={`chip ${statusF === 'my-rated' ? 'active-accent' : ''}`}
+            onClick={() => setStatusF(statusF === 'my-rated' ? 'all' : 'my-rated')}>我评过</button>
+          <button className={`chip ${statusF === 'team-hang' ? 'active-accent' : ''}`}
+            onClick={() => setStatusF(statusF === 'team-hang' ? 'all' : 'team-hang')}>队里有夯</button>
         </div>
       </header>
 
@@ -135,8 +135,14 @@ export function PartyCard({ p, defaultExpanded = false }: { p: Party; defaultExp
           </div>
         </>
       )}
+      {expanded && (
+        <div onClick={(ev) => ev.stopPropagation()}>
+          <NoteInput type="party" id={p.id} />
+          <TeamNotes type="party" id={p.id} />
+        </div>
+      )}
       <div onClick={(ev) => ev.stopPropagation()}>
-        <TriStatus type="party" id={p.id} />
+        <RatingBar type="party" id={p.id} />
         <TeamMarks type="party" id={p.id} />
       </div>
     </article>

@@ -56,8 +56,21 @@ export interface Venue {
   halls: VenueHall[];
 }
 
+export interface Forum {
+  id: string;
+  track: string;
+  title: string;
+  titleEn: string;
+  date: string; // "07-17"
+  time: string;
+  room: string;
+  venue: string;
+}
+
 export type TargetType = 'exhibitor' | 'party' | 'forum';
-export type MarkStatus = 'want' | 'done' | 'skip';
+
+/** 五级评分，从高到低。status 为 null = 只记了纪要还没评 */
+export type MarkStatus = 'hang' | 'top' | 'elite' | 'npc' | 'trash';
 
 export interface Mark {
   memberId: string;
@@ -65,7 +78,7 @@ export interface Mark {
   memberColor: string;
   targetType: TargetType;
   targetId: string;
-  status: MarkStatus;
+  status: MarkStatus | null;
   note: string;
   updatedAt: string;
 }
@@ -95,9 +108,18 @@ export interface TeammatePresence {
   since: string;
 }
 
-/** UI labels for the tri-state control, per target type */
-export const STATUS_LABELS: Record<TargetType, Record<MarkStatus, string>> = {
-  exhibitor: { want: '想聊', done: '聊过了', skip: '爬' },
-  party: { want: '想去', done: '去了', skip: '爬' },
-  forum: { want: '想听', done: '听了', skip: '爬' },
+/** 评分从高到低的展示顺序 */
+export const RATING_ORDER: MarkStatus[] = ['hang', 'top', 'elite', 'npc', 'trash'];
+
+export const RATING_LABELS: Record<MarkStatus, string> = {
+  hang: '夯',
+  top: '顶级',
+  elite: '人上人',
+  npc: 'NPC',
+  trash: '拉完了',
+};
+
+/** 数值分，用于聚合排序（夯=5 … 拉完了=1） */
+export const RATING_SCORE: Record<MarkStatus, number> = {
+  hang: 5, top: 4, elite: 3, npc: 2, trash: 1,
 };

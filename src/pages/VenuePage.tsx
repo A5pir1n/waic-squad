@@ -15,7 +15,7 @@ export function VenuePage() {
   const navigate = useNavigate();
   const [venues, setVenues] = useState<Venue[]>([]);
   const [exhibitors, setExhibitors] = useState<Exhibitor[]>([]);
-  const { session, marks } = useTeam();
+  const { marks } = useTeam();
 
   useEffect(() => {
     void loadVenues().then(setVenues);
@@ -25,20 +25,19 @@ export function VenuePage() {
   const venue = venues.find((v) => v.id === venueId);
 
   const hallStats = useMemo(() => {
-    if (!venue) return new Map<string, { want: number; teamWant: number; done: number }>();
-    const stats = new Map<string, { want: number; teamWant: number; done: number }>();
+    const stats = new Map<string, { hang: number; rated: number }>();
+    if (!venue) return stats;
     for (const e of exhibitors) {
       if (e.venue !== venue.name) continue;
       const bucket = marks[markKey('exhibitor', e.id)] ?? {};
-      const s = stats.get(e.hall) ?? { want: 0, teamWant: 0, done: 0 };
-      const mine = bucket[session.member.id]?.status;
-      if (mine === 'want') s.want += 1;
-      if (mine === 'done') s.done += 1;
-      if (Object.values(bucket).some((m) => m.status === 'want' && m.memberId !== session.member.id)) s.teamWant += 1;
+      const s = stats.get(e.hall) ?? { hang: 0, rated: 0 };
+      const statuses = Object.values(bucket).map((m) => m.status).filter(Boolean);
+      if (statuses.includes('hang')) s.hang += 1;
+      if (statuses.length > 0) s.rated += 1;
       stats.set(e.hall, s);
     }
     return stats;
-  }, [venue, exhibitors, marks, session.member.id]);
+  }, [venue, exhibitors, marks]);
 
   if (!venue) return null;
 
@@ -76,7 +75,7 @@ export function VenuePage() {
 
 function HallGrid({ halls, stats, onPick }: {
   halls: VenueHall[];
-  stats: Map<string, { want: number; teamWant: number; done: number }>;
+  stats: Map<string, { hang: number; rated: number }>;
   onPick: (hall: string) => void;
 }) {
   const max = Math.max(...halls.map((h) => h.count), 1);
@@ -101,11 +100,10 @@ function HallGrid({ halls, stats, onPick }: {
             <span className="hall-industries">
               {h.topIndustries.map(([name]) => name).join(' / ')}
             </span>
-            {(s?.want || s?.teamWant || s?.done) ? (
+            {(s?.hang || s?.rated) ? (
               <span className="hall-badges">
-                {s.want > 0 && <em className="hb hb-want">{s.want} 想聊</em>}
-                {s.teamWant > 0 && <em className="hb hb-team">{s.teamWant} 队友</em>}
-                {s.done > 0 && <em className="hb hb-done">{s.done} 聊过</em>}
+                {s.hang > 0 && <em className="hb hb-want">{s.hang} 夯</em>}
+                {s.rated > 0 && <em className="hb hb-done">{s.rated} 评过</em>}
               </span>
             ) : null}
           </button>

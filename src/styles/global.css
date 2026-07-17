@@ -103,26 +103,34 @@ input, textarea { font: inherit; color: var(--text); background: none; border: n
   padding: 1px 8px; white-space: nowrap;
 }
 
-/* ---------- tri-status control ---------- */
-.tri {
-  display: flex; gap: var(--sp-2); margin-top: var(--sp-3);
+/* ---------- 五级评分条: 夯 / 顶级 / 人上人 / NPC / 拉完了 ---------- */
+.rating {
+  display: flex; gap: 6px; margin-top: var(--sp-3);
 }
-.tri button {
+.rating button {
   flex: 1; padding: 7px 0; border-radius: var(--r-pill);
   border: 1px solid var(--hairline);
-  color: var(--text-mid); font-size: var(--text-sm);
+  color: var(--text-mid); font-size: var(--text-xs);
+  white-space: nowrap;
   transition: all var(--duration-fast) var(--ease-out);
 }
-.tri button:active { transform: scale(0.96); }
-.tri button.on-want {
+.rating button:active { transform: scale(0.94); }
+.rating button.on-hang {
   color: #0d0a03; background: var(--accent); border-color: var(--accent);
   box-shadow: 0 0 18px var(--accent-glow);
-  font-weight: 600;
+  font-weight: 700;
 }
-.tri button.on-done {
+.rating button.on-top {
   color: #000; background: #fff; border-color: #fff; font-weight: 600;
 }
-.tri button.on-skip {
+.rating button.on-elite {
+  color: var(--text); background: var(--surface-3);
+  border-color: var(--hairline-strong); font-weight: 500;
+}
+.rating button.on-npc {
+  color: var(--text-mid); background: var(--surface-2); border-color: transparent;
+}
+.rating button.on-trash {
   color: var(--text-low); background: var(--surface-2); border-color: transparent;
   text-decoration: line-through;
 }
@@ -134,6 +142,14 @@ input, textarea { font: inherit; color: var(--text); background: none; border: n
   font-size: var(--text-xs); color: var(--text-mid);
   border: 1px solid var(--hairline); border-radius: var(--r-pill); padding: 2px 8px 2px 3px;
 }
+.mark-chip.chip-hang { border-color: var(--accent); color: var(--accent); }
+.mark-chip.chip-top { border-color: rgba(255,255,255,0.6); color: var(--text); }
+.mark-chip.chip-trash { opacity: 0.55; text-decoration: line-through; }
+
+/* 队友纪要正文 */
+.team-notes { margin-top: var(--sp-2); display: flex; flex-direction: column; gap: 4px; }
+.team-note { font-size: var(--text-sm); color: var(--text-mid); }
+.team-note b { font-weight: 500; }
 
 /* ---------- avatar ---------- */
 .avatar {
